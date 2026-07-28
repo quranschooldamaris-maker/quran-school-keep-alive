@@ -1,0 +1,36 @@
+name: Daily Keep-Alive Ping
+
+on:
+  schedule:
+    - cron: '0 3 * * *'   # كل يوم الساعة 3 صباحًا UTC
+  workflow_dispatch:        # يسمحلك تشغّله يدويًا من تبويب Actions للتجربة
+
+jobs:
+  ping-supabase-projects:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Project 1 - fetch branches
+        run: |
+          STATUS=$(curl -s -o /tmp/response1.json -w "%{http_code}" \
+            "${{ secrets.PROJECT1_URL }}/rest/v1/branches?select=*" \
+            -H "apikey: ${{ secrets.PROJECT1_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.PROJECT1_KEY }}")
+          echo "Project 1 response code: $STATUS"
+          cat /tmp/response1.json
+          if [ "$STATUS" -ne 200 ]; then
+            echo "::error::Project 1 request failed with status $STATUS"
+            exit 1
+          fi
+
+      - name: Ping Project 2 - fetch branches
+        run: |
+          STATUS=$(curl -s -o /tmp/response2.json -w "%{http_code}" \
+            "${{ secrets.PROJECT2_URL }}/rest/v1/branches?select=*" \
+            -H "apikey: ${{ secrets.PROJECT2_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.PROJECT2_KEY }}")
+          echo "Project 2 response code: $STATUS"
+          cat /tmp/response2.json
+          if [ "$STATUS" -ne 200 ]; then
+            echo "::error::Project 2 request failed with status $STATUS"
+            exit 1
+          fi
